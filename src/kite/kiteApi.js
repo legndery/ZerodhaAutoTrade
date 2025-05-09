@@ -32,7 +32,7 @@ export async function checkAccessToken() {
     const profile = await kc.getProfile();
     debug() && console.log("Profile:", profile);
   } catch (err) {
-    console.error("Error getting profile:", err);
+    debug() && console.error("Error getting profile:", err);
     throw err;
   }
 }
@@ -69,4 +69,15 @@ export async function placeOrder(params) {
   } catch (err) {
     console.error("Error placing order:", err);
   }
+}
+
+export async function getFunds() {
+  try {
+    const funds = await kc.getMargins();
+    debug() && console.log("Funds:", funds);
+    return funds.equity?.available.cash;
+  } catch (err) {
+    console.error("Error getting funds:", err);
+  }
+
 }

@@ -2,14 +2,17 @@ import puppeteer from "puppeteer";
 import { TOTP } from "totp-generator";
 import config from "../../config/config.js";
 import { debug } from "../utils/util.js";
+import chalk from "chalk";
+
+const MARKER = "[AutoLogin]";
 
 export async function autoLogin(loginUrl) {
   if (!config.AUTO_LOGIN) {
-    console.log(`Manually open this: ${LOGIN_URL}`);
+    console.log(`${MARKER} Manually open this: ${loginUrl}`);
     return;
   }
   try {
-    console.log("Trying to auto login!")
+    console.log(chalk.yellow(`${MARKER} Trying to auto login!`));
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     await page.goto(loginUrl);
@@ -20,7 +23,7 @@ export async function autoLogin(loginUrl) {
     debug() && console.log(otp);
     await page.locator('.twofa-form #userid').fill(otp);
     await page.waitForNavigation();
-    console.log("Auto login successful!")
+    console.log(chalk.bold.green(`${MARKER} Auto login successful!`))
     await delay(1000);
     await browser.close();
   } catch (err) {

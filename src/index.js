@@ -6,6 +6,7 @@ import path from 'path';
 import router from './server/router.js';
 import cron from 'node-cron';
 import { appEventEmitter, START_ALGO_LOOP } from './manager/eventManager.js';
+import chalk from 'chalk';
 
 const app = express();
 const port = 3000;
@@ -20,13 +21,13 @@ const httpsServer = https.createServer(credentials, app);
 app.use('/', router);
 
 httpsServer.listen(port, async () => {
-  console.log(`Server listening on port ${port}`);
+  console.log(chalk.bold.green(`Server listening on port ${port}\n`));
   // appEventEmitter.emit(START_ALGO_LOOP);
 });
 
 // cron every day at 3 15 pm
 cron.schedule('15 15 * * *', () => {
-  console.log('Running cron job at 3:15 pm');
+  console.log(chalk.bold.green('Running cron job at 3:15 pm'));
   appEventEmitter.emit(START_ALGO_LOOP);
 });
 
