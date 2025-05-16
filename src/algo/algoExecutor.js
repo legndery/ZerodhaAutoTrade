@@ -2,20 +2,17 @@
 import { NIFTYBEES } from "../utils/constants.js";
 import { checkAccessToken, getFunds, getHolding, placeOrder } from "../kite/kiteApi.js";
 import config from "../../config/config.js"
-import { readFileSync, writeFileSync } from "fs";
-import path from "path";
 import { daysBudget } from "../utils/util.js";
 import chalk from "chalk";
+import { getLastNDaysDidntBuy, increaseLastNDaysDidntBuyBy1 } from "../dao/storage.js";
 const MARKER = "[AlgoExecutor]";
-
-const lastNDaysDidntBuyPath = path.resolve(process.env.__DIRNAME, config.LAST_N_DAYS_DIDNT_BUY_PATH);
 
 export async function executeAlgo() {
   const niftybees = await getHolding(NIFTYBEES);
   console.log(`${MARKER} Day change % for ${chalk.bold.green(NIFTYBEES)}: ${chalk.bold.yellow(niftybees?.day_change_percentage)}`);
-  let howManyDaysDidntBuy = Number(readFileSync(lastNDaysDidntBuyPath));
+  let howManyDaysDidntBuy = getLastNDaysDidntBuy();
 
-  if (config.FORCE_BUY || niftybees?.day_change_percentage <= 0 && false) {
+  if (config.FORCE_BUY || niftybees?.day_change_percentage <= 0) {
     console.log(`${MARKER} Trying to buy some ${chalk.bold.green(NIFTYBEES)}`);
     const funds = await getFunds();
     console.log(`${MARKER} Funds available:`, chalk.bold.green(funds));
@@ -29,7 +26,7 @@ export async function executeAlgo() {
 
   } else {
     console.log(chalk.yellow(`${MARKER} No need to buy ${NIFTYBEES}`));
-    writeFileSync(lastNDaysDidntBuyPath, (howManyDaysDidntBuy + 1).toString());
+    increaseLastNDaysDidntBuyBy1(howManyDaysDidntBuy);
   }
 }
 

@@ -16,9 +16,11 @@ export async function autoLogin(loginUrl) {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     await page.goto(loginUrl);
+    console.log(chalk.yellow(`${MARKER} Opened login page!`));
     await page.locator('#userid').fill(config.USERNAME);
     await page.locator('#password').fill(config.PASSWORD);
     await page.locator('.actions button[type=submit]').click();
+    console.log(chalk.yellow(`${MARKER} Opening OTP page!`));
     const { otp } = TOTP.generate(config.TOTP_SEED);
     debug() && console.log(otp);
     await page.locator('.twofa-form #userid').fill(otp);
