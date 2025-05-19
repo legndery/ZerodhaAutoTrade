@@ -75,7 +75,7 @@ export async function getFunds() {
   try {
     const funds = await kc.getMargins();
     debug() && console.log("Funds:", funds);
-    return funds.equity?.available.cash;
+    return funds.equity?.net;
   } catch (err) {
     console.error("Error getting funds:", err);
   }

@@ -1,6 +1,6 @@
 import path from 'path';
 import { readFileSync } from 'fs';
-import config from "../../config/config";
+import config from "../../config/config.js";
 import { writeFileSync } from 'fs';
 
 const lastNDaysDidntBuyPath = path.resolve(process.env.__DIRNAME, config.LAST_N_DAYS_DIDNT_BUY_PATH);
