@@ -11,6 +11,7 @@ appEventEmitter.on(START_ALGO_LOOP, async () => {
   try {
     await algoLoop();
   } catch (e) {
+    console.error(e);
     appEventEmitter.emit(AUTO_LOGIN);
   }
 });
