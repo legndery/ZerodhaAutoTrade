@@ -11,7 +11,7 @@ export default {
   // Normal configs
   budget: 25000,
   max_per_day_fund: 1000,
-  FORCE_BUY: true,
+  FORCE_BUY: false,
   LIVE_ORDER: true,
   LAST_N_DAYS_DIDNT_BUY_PATH: '../config/buystock.txt'
 }

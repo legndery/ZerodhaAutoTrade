@@ -1,10 +1,11 @@
 
 import { NIFTYBEES } from "../utils/constants.js";
-import { checkAccessToken, getFunds, getHolding, placeOrder } from "../kite/kiteApi.js";
+import { getFunds, getHolding, placeOrder } from "../kite/kiteApi.js";
 import config from "../../config/config.js"
 import { calculateQuantityToBuy, debug } from "../utils/util.js";
 import chalk from "chalk";
-import { getLastNDaysDidntBuy, increaseLastNDaysDidntBuyBy1 } from "../dao/storage.js";
+import { getLastNDaysDidntBuy, increaseLastNDaysDidntBuyBy1, storeCurrentPrice } from "../dao/storage.js";
+import moment from "moment-business-days";
 const MARKER = "[AlgoExecutor]";
 
 export async function executeAlgo() {
@@ -20,32 +21,36 @@ export async function executeAlgo() {
     console.log(`${MARKER} Funds available:`, chalk.bold.green(funds));
     possibleQuantity = calculateQuantityToBuy(niftybees?.last_price, funds, howManyDaysDidntBuy);
     console.log(chalk.bold.yellow(`${MARKER} Can buy ${possibleQuantity} ${NIFTYBEES} at ${niftybees?.last_price} per share`));
-  }
 
-  if (config.LIVE_ORDER && possibleQuantity > 0) {
-    console.log(chalk.bold.green(`${MARKER} Buying ${possibleQuantity} ${NIFTYBEES} at ${niftybees?.last_price} per share`));
-    placeOrder({
-      tradingsymbol: NIFTYBEES,
-      quantity: possibleQuantity
-    });
+    if (config.LIVE_ORDER && possibleQuantity > 0) {
+      console.log(chalk.bold.green(`${MARKER} Buying ${possibleQuantity} ${NIFTYBEES} at ${niftybees?.last_price} per share`));
+      placeOrder({
+        tradingsymbol: NIFTYBEES,
+        quantity: possibleQuantity
+      });
+    } else {
+      console.log(chalk.yellow(`${MARKER} No need to buy ${NIFTYBEES}`));
+    }
   } else {
-    console.log(chalk.yellow(`${MARKER} No need to buy ${NIFTYBEES}`));
+    console.log(chalk.yellow(`${MARKER} No need to buy due to positive market for ${NIFTYBEES}`));
     increaseLastNDaysDidntBuyBy1(howManyDaysDidntBuy);
   }
 }
 
+export async function executeDataCollection() {
+  const niftybees = await getHolding(NIFTYBEES);
+  console.log(`${MARKER} Day change % for ${chalk.bold.green(NIFTYBEES)}: ${chalk.bold.yellow(niftybees?.day_change_percentage)}`);
+  storeCurrentPrice(moment(), niftybees?.tradingsymbol, niftybees?.last_price);
+}
+
 export async function algoLoop() {
   try {
-    await checkAccessToken();
-    console.log(chalk.bold.green(`${MARKER} Access token valid`));
     await executeAlgo();
     console.log(chalk.bold.green(`${MARKER} Algo Executed for the day`));
     // exit(0);
   } catch (error) {
     console.error('Initialization failed:', error);
     console.log(chalk.bold.red(`${MARKER} Access token expired`));
-    // if (error.message.indexOf('access_token') > -1) {
     throw error;
-    // }
   }
 }
