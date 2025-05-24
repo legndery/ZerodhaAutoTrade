@@ -14,6 +14,11 @@ export function getLastNDaysDidntBuy() {
 export function increaseLastNDaysDidntBuyBy1(count) {
   return writeFileSync(lastNDaysDidntBuyPath, (count + 1).toString().toString());
 }
+
+export function resetLastNDaysDidntBuy() {
+  return writeFileSync(lastNDaysDidntBuyPath, "0");
+}
+
 /**
  * 
  * @param {moment()} dateMoment 

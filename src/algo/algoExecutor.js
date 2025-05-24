@@ -4,7 +4,7 @@ import { getFunds, getHolding, placeOrder } from "../kite/kiteApi.js";
 import config from "../../config/config.js"
 import { calculateQuantityToBuy, debug } from "../utils/util.js";
 import chalk from "chalk";
-import { getLastNDaysDidntBuy, increaseLastNDaysDidntBuyBy1, storeCurrentPrice } from "../dao/storage.js";
+import { getLastNDaysDidntBuy, increaseLastNDaysDidntBuyBy1, resetLastNDaysDidntBuy, storeCurrentPrice } from "../dao/storage.js";
 import moment from "moment-business-days";
 const MARKER = "[AlgoExecutor]";
 
@@ -28,6 +28,7 @@ export async function executeAlgo() {
         tradingsymbol: NIFTYBEES,
         quantity: possibleQuantity
       });
+      resetLastNDaysDidntBuy();
     } else {
       console.log(chalk.yellow(`${MARKER} No need to buy ${NIFTYBEES}`));
     }

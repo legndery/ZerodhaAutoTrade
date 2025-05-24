@@ -3,7 +3,7 @@ import { TOTP } from "totp-generator";
 import config from "../../config/config.js";
 import { debug } from "../utils/util.js";
 import chalk from "chalk";
-import { setEncryptedAccessToken } from "./kiteApi.js";
+import { setEncryptedAccessToken } from "./kiteNormalUser.js";
 
 const MARKER = "[AutoLogin]";
 
@@ -46,7 +46,6 @@ export async function autoLoginNormalUser(loginUrl = "https://kite.zerodha.com/"
     const page = await browser.newPage();
     page.on('response', async (response) => {
       const request = response.request();
-      console.log("------");
       if (request.url().includes("user/profile")){
         console.log(request.url());
         const headers = request.headers();

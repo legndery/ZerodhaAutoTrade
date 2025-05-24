@@ -14,27 +14,6 @@ if (existsSync(SESSION_CONFIG_PATH)) {
   session = JSON.parse(sessionJson || '{}');
 }
 
-class KiteConnectForNormalUser extends KiteConnect {
-
-  constructor(params) {
-    super(params);
-    this.enc_access_token = params.enc_access_token;
-  }
-  createAxiosInstance() {
-    const axiosInstance = super.createAxiosInstance();
-    axiosInstance.interceptors.request.use((config) => {
-      if (this.enc_access_token) {
-        config.headers["authorization"] = `enctoken ${this.enc_access_token}`;
-      }
-      return config;
-    });
-    return axiosInstance;
-  }
-  setEncAccessToken(enc_access_token) {
-    this.enc_access_token = enc_access_token;
-  }
-}
-
 const kc = new KiteConnect({ api_key: apiKey, access_token: session.access_token, debug: true });
 
 export async function generateSession(requestToken) {
@@ -48,10 +27,6 @@ export async function generateSession(requestToken) {
   }
 }
 
-export async function setEncryptedAccessToken(encAccessToken) {
-  kc.setEncAccessToken(encAccessToken);
-  writeSessionInfo({ enc_access_token: encAccessToken });
-}
 export async function checkAccessToken() {
   try {
     const profile = await kc.getProfile();
