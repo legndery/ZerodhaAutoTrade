@@ -3,6 +3,8 @@ import path from 'path';
 import config from '../../config/config.js';
 import moment from 'moment-business-days';
 import chalk from 'chalk';
+import { getLock, setLock } from '../dao/storage.js';
+import { LOCK_STATES } from './constants.js';
 
 export function writeSessionInfo(session) {
   writeFileSync(path.resolve(process.env.__DIRNAME, '../config/session.json'), JSON.stringify(session, null, 4));
@@ -49,3 +51,38 @@ export function businessDiffInclusive(d1, d2) {
   }
   return daysBetween;
 };
+export class LockError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'LockError';
+  }
+}
+const LOCK_MARKER = '[LOCK] ';
+export function acquireLock() {
+  if (config.FORCE_UNLOCK) {
+    console.log(`${LOCK_MARKER} Forcing unlock`);
+    return LOCK_STATES.UNLOCKED;
+  }
+  const lockState = getLock();
+  console.log(`${LOCK_MARKER} Acquiring lock. Current State: ${chalk.yellow.bold(lockState)}`);
+  if (lockState === LOCK_STATES.LOCKED) {
+    console.error(`${LOCK_MARKER} Algorithm already running cannot run while it is running`)
+    throw new LockError('Algorithm already running');
+  }
+  if (lockState === LOCK_STATES.CANNOT_LOCK) {
+    console.error(`${LOCK_MARKER} Algorithm already ran for the day`);
+    throw new LockError('Algorithm already ran for the day');
+  }
+  return lockState;
+}
+/**
+ * 
+ * @param {boolean} success 
+ */
+export function releaseLock(success) {
+  if (success) {
+    setLock(LOCK_STATES.CANNOT_LOCK);
+  } else {
+    setLock(LOCK_STATES.UNLOCKED);
+  }
+}

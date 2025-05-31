@@ -5,9 +5,10 @@ import fs from 'fs';
 import path from 'path';
 import router from './server/router.js';
 import cron from 'node-cron';
-import { appEventEmitter, AUTO_LOGIN, START_ALGO_LOOP } from './manager/eventManager.js';
+import { appEventEmitter, START_ALGO_LOOP } from './manager/eventManager.js';
 import chalk from 'chalk';
 import moment from 'moment-business-days';
+import { releaseLock } from './utils/util.js';
 
 const app = express();
 const port = 3000;
@@ -23,8 +24,9 @@ app.use('/', router);
 
 httpsServer.listen(port, async () => {
   console.log(chalk.bold.green(`Server listening on port ${port}\n`));
-  // appEventEmitter.emit(START_ALGO_LOOP);
-  appEventEmitter.emit(AUTO_LOGIN);
+  appEventEmitter.emit(START_ALGO_LOOP);
+  // appEventEmitter.emit(AUTO_LOGIN);
+  // import('./experimentalIndex.js');
 });
 
 // cron every week day at 3 15 pm
@@ -37,3 +39,7 @@ cron.schedule('15 15 * * 1-5', () => {
   appEventEmitter.emit(START_ALGO_LOOP);
 });
 
+cron.schedule('30 9 * * *', () => {
+  console.log(chalk.bold.green('Running cron job at 9:30 am'));
+  releaseLock(false);
+});

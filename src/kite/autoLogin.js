@@ -42,7 +42,7 @@ export async function autoLoginNormalUser(loginUrl = "https://kite.zerodha.com/"
   }
   try {
     console.log(chalk.yellow(`${MARKER} Trying to auto login!`));
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
     page.on('response', async (response) => {
       const request = response.request();

@@ -14,7 +14,7 @@ if (existsSync(SESSION_CONFIG_PATH)) {
   session = JSON.parse(sessionJson || '{}');
 }
 
-const kc = new KiteConnect({ api_key: apiKey, access_token: session.access_token, debug: true });
+const kc = new KiteConnect({ api_key: apiKey, access_token: session.access_token, debug: false });
 
 export async function generateSession(requestToken) {
   try {

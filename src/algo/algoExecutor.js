@@ -2,7 +2,7 @@
 import { NIFTYBEES } from "../utils/constants.js";
 import { getFunds, getHolding, placeOrder } from "../kite/kiteApi.js";
 import config from "../../config/config.js"
-import { calculateQuantityToBuy, debug } from "../utils/util.js";
+import { acquireLock, calculateQuantityToBuy, debug, LockError, releaseLock } from "../utils/util.js";
 import chalk from "chalk";
 import { getLastNDaysDidntBuy, increaseLastNDaysDidntBuyBy1, resetLastNDaysDidntBuy, storeCurrentPrice } from "../dao/storage.js";
 import moment from "moment-business-days";
@@ -12,7 +12,8 @@ export async function executeAlgo() {
   const niftybees = await getHolding(NIFTYBEES);
   debug() && console.log(niftybees);
   console.log(`${MARKER} Day change % for ${chalk.bold.green(NIFTYBEES)}: ${chalk.bold.yellow(niftybees?.day_change_percentage)}`);
-  let howManyDaysDidntBuy = getLastNDaysDidntBuy();
+  const howManyDaysDidntBuy = getLastNDaysDidntBuy();
+  console.log(`${MARKER} Didn't buy stock last: ${chalk.bold.yellow(howManyDaysDidntBuy)} days`);
 
   let possibleQuantity = 0;
   if (config.FORCE_BUY || niftybees?.day_change_percentage <= 0) {
@@ -46,10 +47,16 @@ export async function executeDataCollection() {
 
 export async function algoLoop() {
   try {
+    acquireLock();
     await executeAlgo();
     console.log(chalk.bold.green(`${MARKER} Algo Executed for the day`));
+    releaseLock(true);
     // exit(0);
   } catch (error) {
+    if (error instanceof LockError) {
+      return;
+    }
+    releaseLock(false);
     console.error('Initialization failed:', error);
     console.log(chalk.bold.red(`${MARKER} Access token expired`));
     throw error;
